@@ -209,24 +209,21 @@ def write_table_and_chart(summary, seed):
     plot = primary[primary.metric=='nodes_wiped'].set_index('method')
     plt.rcParams.update({'font.size':11, 'axes.spines.top':False, 'axes.spines.right':False})
     fig, ax = plt.subplots(figsize=(10.5,5.6), layout='constrained')
-    fig.set_layout_engine('constrained', rect=(0,.055,1,.945))
     baseline = plot.loc['Random baseline']
-    ax.axhspan(baseline.p05, baseline.p95, color='#91a8bf', alpha=.25, label='All-random 5th–95th percentile (1,000 draws)')
-    ax.axhline(baseline['mean'], color='#62798c', linestyle='--', label=f'All-random mean: {baseline["mean"]:.1f}')
-    labels = ['Soonest sweep\n20 positions', 'Latest sweep\n20 positions', 'Random ties\n1,000 draws', 'Validator index\nfixed']
+    ax.axhspan(baseline.p05, baseline.p95, color='#91a8bf', alpha=.25, label='Random 5th–95th percentile')
+    ax.axhline(baseline['mean'], color='#62798c', linestyle='--', label=f'Random mean: {baseline["mean"]:.1f}')
+    labels = ['Soonest sweep', 'Latest sweep', 'Random ties', 'Validator index']
     for x, method in enumerate(METHODS[:4]):
         r = plot.loc[method]
         # Quantiles may lie on one side of mean; draw interval independently.
         ax.vlines(x, r.p05, r.p95, colors='#145b78', linewidth=2.5)
         ax.plot(x, r['mean'], 'o', color='#145b78', markersize=8)
         ax.annotate(f'{r["mean"]:.1f}', (x, r['mean']), xytext=(10,7), textcoords='offset points')
-    ax.set(xticks=range(4), xticklabels=labels, ylabel='Nodes losing all eligible minipools',
-           title='50,000 rETH net shortfall: commission ordering wipes more minipool books')
+    ax.set(xticks=range(4), xticklabels=labels, ylabel='Eligible minipool books wiped')
     ax.set_xlim(-.5,3.7)
     ax.set_ylim(0, max(plot.p95)*1.16)
     ax.grid(axis='y',alpha=.2)
     ax.legend(loc='lower left', fontsize=9)
-    fig.text(.01,.015, 'Block 26,127,238 · seed '+str(seed)+' · strict cap · sweep ranges show rotation sensitivity · nodes may retain other validators', fontsize=8)
     for suffix in ['png','pdf','svg']:
         fig.savefig(ROOT / f'nodes_wiped.{suffix}', dpi=200)
     plt.close(fig)

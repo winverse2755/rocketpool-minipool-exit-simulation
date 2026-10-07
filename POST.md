@@ -55,7 +55,7 @@ Cells show mean [5th–95th percentile]. Sweep ranges show rotation sensitivity,
 
 The wiped-book result holds with the second seed and when the first cap-crossing validator is included. The 10k and 200k runs also wipe more books, but at 200k the top-10 share under random ties and validator index (21.85% / 22.22%) is below the random baseline (22.68%), so concentration depends on the metric and request size.
 
-![Wiped eligible minipool books and top-10 exit shares at 10k, 50k, and 200k rETH, with a zoom on the 200k top-10 shares](exit_concentration_by_size.png)
+![Wiped eligible minipool books and top-10 exit shares at 10k, 50k, and 200k rETH](exit_concentration_by_size.png)
 
 *Figure 4. Wiped-book counts exceed random at all three modeled sizes. Top-10 shares converge at 200k, where random ties and validator index fall below the random baseline.*
 
