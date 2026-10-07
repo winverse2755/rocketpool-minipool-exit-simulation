@@ -1,0 +1,19 @@
+{
+  "seed": 20261007,
+  "demand_reth": 50000,
+  "strict_cap": true,
+  "replayed_saved_draws": 2041,
+  "clustering_source": "clustering_original.json; original seed 20261005, not later seed 20261006",
+  "eligible_capital_eth": 260688.0,
+  "eligible_capital_weighted_commission_pct": 11.684240964958294,
+  "fraction_denominator": "eligible minipools per node; unweighted averages over node addresses; touched-only and all-node scopes kept separate",
+  "full_node_limit": "No beacon join for megapools; contract active count is a proxy and may include queued/exiting validators",
+  "yield_model": "Equal gross reward rate per funded ETH and static contract commission; retained user reward factor = 1 - capital-weighted commission; no measured realised APR",
+  "gross_apr_example": 0.03,
+  "near_snapshot_reth_supply": "315617.221650394157395545",
+  "near_snapshot_reth_backing_eth": "370271.8265279967384780037417",
+  "supply_source_block": 26127268,
+  "hypothetical_50000_reth_redemption_supply_fraction_pct": 15.841974572409255,
+  "hypothetical_backing_after_50000_reth_redemption_eth": "311613.4579206361892280037417",
+  "alternatives": "Only all-random baseline and randomized ties already modeled; no node-balanced or round-robin algorithm tested"
+}

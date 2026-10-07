@@ -1,5 +1,7 @@
 # Does commission ordering concentrate Rocket Pool minipool exits?
 
+The revised [forum post](POST.md) includes the original clustering comparison, the exit simulations, the efficiency discussion, and four supporting charts. The [submission bundle](forum_submission.zip) contains the post and PNGs, with [forum upload instructions](forum_submission_notes.md).
+
 **Yes in this static 50,000-rETH net-shortfall scenario.** All four commission tie-breaks wipe more eligible minipool books than the all-random baseline: means of 235.1 (soonest sweep), 250.8 (latest sweep), 222.4 (random ties), and 206 (validator index), versus 117.6 random [103–132]. The direction holds under a second seed and the tested overshoot rule. This does not establish that one sweep tie-break is consistently better than another, nor that the top-10 share increases at every withdrawal size.
 
 ## Method in three lines
@@ -67,6 +69,8 @@ python -m venv .venv
 .venv/bin/python simulate.py
 .venv/bin/python verify.py
 .venv/bin/python build_report.py
+.venv/bin/python make_post_figures.py
+.venv/bin/python make_size_comparison.py
 ```
 
 The script needs **no RPC, API key, or live network access**. [minipools.csv](minipools.csv), [nodes.csv](nodes.csv), and [snapshot.json](snapshot.json) are copied byte-for-byte from the audited Phases 1–3 inputs. [provenance.md](provenance.md) records upstream collection and hashes. [sha256_manifest.json](sha256_manifest.json) checks all published artifact bytes.
@@ -81,4 +85,8 @@ Other spreadsheet applications can recalculate the workbook directly. `verify.py
 
 All per-draw results: [draws.csv](draws.csv). Aggregated 5th–95th percentiles: [summary.csv](summary.csv). Seeds and exact caps: [results.json](results.json). Pointers: [sweep_pointers.csv](sweep_pointers.csv). Representative 50k prefixes (including the first excluded row): [representative_prefixes.csv](representative_prefixes.csv). Per-node accounting: [representative_nodes.csv](representative_nodes.csv). Single chart is also available as [PDF](nodes_wiped.pdf) and [SVG](nodes_wiped.svg).
 
-Public repository: [https://github.com/winverse2755/rocketpool-minipool-exit-simulation](https://github.com/winverse2755/rocketpool-minipool-exit-simulation). A shorter result post is [POST.md](POST.md).
+Additional post data: [original clustering run](clustering_original.json) and its [1,000 shuffle draws](clustering_original_draws.csv) use seed 20261005; the later clustering means in this report use seed 20261006. [post_details_draws.csv](post_details_draws.csv) and [post_details_summary.csv](post_details_summary.csv) derive per-node removal fractions, singleton/multi-node wipe counts, megapool-retention proxies, capital-weighted commissions and validator-principal accounting by replaying the existing 2,041 strict-cap 50k draw orders. [post_details.json](post_details.json) records assumptions; [node_fraction_removed.csv](node_fraction_removed.csv) records each node's fraction for representative draw 0 of each method. The yield calculation is a static contract-fee proxy on remaining eligible minipool capital, not a protocol APR forecast.
+
+The report builder regenerates these derived metrics and preserves the editorially maintained post. Plot scripts reproduce [commission_clustering.png](commission_clustering.png), [reth_efficiency.png](reth_efficiency.png), and [exit_concentration_by_size.png](exit_concentration_by_size.png). The size-comparison chart's filtered source is [exit_concentration_by_size.csv](exit_concentration_by_size.csv), with [PDF](exit_concentration_by_size.pdf) and [SVG](exit_concentration_by_size.svg) exports.
+
+Public repository: [https://github.com/winverse2755/rocketpool-minipool-exit-simulation](https://github.com/winverse2755/rocketpool-minipool-exit-simulation). The forum post is [POST.md](POST.md).

@@ -25,3 +25,7 @@ Input SHA-256:
 - [minipools.csv](minipools.csv): `302be2bbd6f04354b96bde86120c16a3269d92406def8e4f5f15a7e1463b6985`
 - [nodes.csv](nodes.csv): `6ea7ff60d92fe469f37a3cf24b2fe410ecbce6c40ece5cddc64384cdac9c1473`
 - [snapshot.json](snapshot.json): `e3b04c5dc993e70778a9cedb91acedf0f0f0cbdaa73b46dc70014e4e37ac8752`
+
+## Original clustering comparison used in the revised post
+
+[clustering_original.json](clustering_original.json) and [clustering_original_draws.csv](clustering_original_draws.csv) preserve the original 1,000-draw commission-shuffle comparison at seed 20261005 from the Phase 0/1 analysis at the same pinned snapshot. The draw means match the published summary, and all three observed clustering statistics reconcile with the audited minipool CSV. The later Phase 1–3 rerun used seed 20261006, explaining the small differences in randomized means in the numerical report.

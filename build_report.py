@@ -31,6 +31,8 @@ def main():
     second_counts=', '.join(f'{m.lower()} {mean(m,"nodes_wiped",seed_value=alternate):,.1f}' for m in ['Soonest sweep','Latest sweep','Random ties','Validator index'])
     note=f'''# Does commission ordering concentrate Rocket Pool minipool exits?
 
+The revised [forum post](POST.md) includes the original clustering comparison, the exit simulations, the efficiency discussion, and four supporting charts. The [submission bundle](forum_submission.zip) contains the post and PNGs, with [forum upload instructions](forum_submission_notes.md).
+
 **Yes in this static 50,000-rETH net-shortfall scenario.** All four commission tie-breaks wipe more eligible minipool books than the all-random baseline: means of 235.1 (soonest sweep), 250.8 (latest sweep), 222.4 (random ties), and 206 (validator index), versus 117.6 random [103–132]. The direction holds under a second seed and the tested overshoot rule. This does not establish that one sweep tie-break is consistently better than another, nor that the top-10 share increases at every withdrawal size.
 
 ## Method in three lines
@@ -90,6 +92,8 @@ python -m venv .venv
 .venv/bin/python simulate.py
 .venv/bin/python verify.py
 .venv/bin/python build_report.py
+.venv/bin/python make_post_figures.py
+.venv/bin/python make_size_comparison.py
 ```
 
 The script needs **no RPC, API key, or live network access**. [minipools.csv](minipools.csv), [nodes.csv](nodes.csv), and [snapshot.json](snapshot.json) are copied byte-for-byte from the audited Phases 1–3 inputs. [provenance.md](provenance.md) records upstream collection and hashes. [sha256_manifest.json](sha256_manifest.json) checks all published artifact bytes.
@@ -104,34 +108,17 @@ Other spreadsheet applications can recalculate the workbook directly. `verify.py
 
 All per-draw results: [draws.csv](draws.csv). Aggregated 5th–95th percentiles: [summary.csv](summary.csv). Seeds and exact caps: [results.json](results.json). Pointers: [sweep_pointers.csv](sweep_pointers.csv). Representative 50k prefixes (including the first excluded row): [representative_prefixes.csv](representative_prefixes.csv). Per-node accounting: [representative_nodes.csv](representative_nodes.csv). Single chart is also available as [PDF](nodes_wiped.pdf) and [SVG](nodes_wiped.svg).
 
-Public repository: [{PUBLIC}]({PUBLIC}). A shorter result post is [POST.md](POST.md).
+Additional post data: [original clustering run](clustering_original.json) and its [1,000 shuffle draws](clustering_original_draws.csv) use seed 20261005; the later clustering means in this report use seed 20261006. [post_details_draws.csv](post_details_draws.csv) and [post_details_summary.csv](post_details_summary.csv) derive per-node removal fractions, singleton/multi-node wipe counts, megapool-retention proxies, capital-weighted commissions and validator-principal accounting by replaying the existing 2,041 strict-cap 50k draw orders. [post_details.json](post_details.json) records assumptions; [node_fraction_removed.csv](node_fraction_removed.csv) records each node's fraction for representative draw 0 of each method. The yield calculation is a static contract-fee proxy on remaining eligible minipool capital, not a protocol APR forecast.
+
+The report builder regenerates these derived metrics and preserves the editorially maintained post. Plot scripts reproduce [commission_clustering.png](commission_clustering.png), [reth_efficiency.png](reth_efficiency.png), and [exit_concentration_by_size.png](exit_concentration_by_size.png). The size-comparison chart's filtered source is [exit_concentration_by_size.csv](exit_concentration_by_size.csv), with [PDF](exit_concentration_by_size.pdf) and [SVG](exit_concentration_by_size.svg) exports.
+
+Public repository: [{PUBLIC}]({PUBLIC}). The forum post is [POST.md](POST.md).
 '''
     (ROOT/'README.md').write_text(note)
-    post=f'''# Does commission ordering concentrate minipool exits?
-
-I tested whether following RPIP-71's suggested commission priority wipes more node minipool books than random selection at the same expected ETH exit credit. **At this snapshot, it does under all four tie-breaks.**
-
-Method, in three lines:
-
-1. Block **26,127,238** (2026-10-05, 16:03:35 UTC): 11,571 eligible minipools / 1,323 node addresses; exclude already exiting or withdrawn validators.
-2. Sort exact commission descending, then soonest sweep / latest sweep / random / validator index; take a priority prefix without exceeding the **58,538.368607-ETH cap** for a 50,000-rETH net shortfall.
-3. Compare against 1,000 random draws; sweep uses 20 randomized index rotations. Seed **{seed}**; rerun **{alternate}** and test including the first cap-crossing validator.
-
-{table}
-
-Cells show mean [5th–95th percentile]; sweep ranges describe rotation sensitivity, not a timing forecast. “Wiped” means all **eligible minipools** selected; nodes may retain megapool validators or other minipools.
-
-The key result is **206–251 wiped books across commission rules, versus 118 random [103–132]**. Soonest sweep touches **546 nodes versus 672** random, has **18.2% versus 5.2%** of exits on wiped nodes, a **42.4% versus 22.8%** top-10 share, and **422k versus 104k RPL** associated with wiped nodes. RPL is counted once per node and is exposure, not predicted selling.
-
-The spreadsheet scenario reconciles; the wiped-book conclusion holds with another seed and the overshoot rule. Sweep point estimates move with the cursor. The 10k and 200k runs also wipe more books under every commission tie-break, but **top-10 share is not higher under every rule at 200k**. The baseline is matched on ETH, so different bonds mean different exit counts.
-
-Script, full CSV, block, seeds, table, chart, spreadsheet and checks: [{PUBLIC}]({PUBLIC}).
-
-Limitations: **draft RPIP; oDAO commission priority is a SHOULD and sweep tie-break a MAY; static snapshot; no behaviour modelled.** Scenario sizes are net shortfalls, not gross queue demand. Circular index order is a sweep proxy, not withdrawal time. No exit delays, operator responses, migration, cooldown history or RPL sales are modelled. The crossing sensitivity violates the draft hard cap and is not the recommended implementation. This tests the suggested ordering policy, not the isolated causal effect of commission clustering.
-
-The broader ordering-and-timing comparison remains proposed funded work; this is the static minipool result.
-'''
-    (ROOT/'POST.md').write_text(post)
+    from post_metrics import main as post_metrics
+    from build_post import main as build_post
+    post_metrics()
+    build_post()
 
 
 if __name__=='__main__':

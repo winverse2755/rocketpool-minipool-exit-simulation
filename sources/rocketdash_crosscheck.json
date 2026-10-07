@@ -1,0 +1,34 @@
+{
+  "source": "https://rocketdash.net/api/home?network=mainnet",
+  "data": {
+    "network": "mainnet",
+    "generatedAt": "2026-10-05T16:10:09.541Z",
+    "syncedAt": "2026-10-05T16:10:09.000Z",
+    "updatedAt": "2026-10-05T16:10:09.559Z",
+    "rethSupplyWei": "315617221650394157395545",
+    "rplSupplyWei": "22875010836733132644610124",
+    "legacyRplStakedWei": "6677616029888140491248165",
+    "megapoolRplStakedWei": "3434905529636909809089279",
+    "totalRplStakedWei": "10112521559525050300337444",
+    "nodeOperators": 4159,
+    "minipoolValidatorsStaking": 14099,
+    "megapoolValidatorsStaking": 4303,
+    "megapoolValidatorsTotal": 5186,
+    "queueMegapoolStandardLength": 792,
+    "queueMegapoolExpressLength": 1312,
+    "queueMegapoolTotalLength": 2104,
+    "queueLength": 2104,
+    "protocolVersion": "1.4",
+    "sourceTokensSyncBlock": 26127268,
+    "sourceNodesSyncBlock": 26127266,
+    "sourceValidatorsSyncBlock": 26127268,
+    "sourceContractsSyncBlock": 26127267
+  },
+  "minipool_count_difference": 0,
+  "source_block_offset": 30,
+  "rpl_difference_wei": {
+    "totalRplStakedWei": "0",
+    "legacyRplStakedWei": "0",
+    "megapoolRplStakedWei": "0"
+  }
+}

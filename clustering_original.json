@@ -1,0 +1,147 @@
+{
+  "snapshot": {
+    "block": 26127238,
+    "block_hash": "0x1bf0be7e400778524a55c4d8bc4228e9c58f7455468ca11571532deb9056abd3",
+    "slot": 15366016,
+    "timestamp": 1791216215,
+    "state_root": "0x547481680d4edb8150b8c1ad5b068350d8b5dc1f7845a0f15a29e7c703c9c5ab",
+    "registry_count": 42317,
+    "staking_count": 14099,
+    "reth_exchange_rate_wei": "1173167372147210985",
+    "beacon_rows": 14099,
+    "discovery_staking_count": 14099,
+    "discovery_block": 26127174,
+    "rpc": "https://eth.drpc.org",
+    "beacon": "https://ethereum-beacon-api.publicnode.com",
+    "beacon_finalized": true,
+    "execution_optimistic": false
+  },
+  "eligible_minipools": 11571,
+  "eligible_nodes": 1323,
+  "single_minipool_nodes": 450,
+  "multi_minipool_nodes": 873,
+  "clustering": {
+    "homogeneous_nodes_pct": {
+      "observed": 81.708238851096,
+      "random": {
+        "mean": 46.528873771730915,
+        "low": 45.04913076341648,
+        "high": 48.07256235827664
+      }
+    },
+    "homogeneous_multi_nodes_pct": {
+      "observed": 72.2794959908362,
+      "random": {
+        "mean": 18.96643757159221,
+        "low": 16.72394043528064,
+        "high": 21.305841924398624
+      }
+    },
+    "same_commission_within_node_pairs_pct": {
+      "observed": 73.48296641579435,
+      "random": {
+        "mean": 41.98363158722783,
+        "low": 41.13560734396095,
+        "high": 42.9365004591805
+      }
+    }
+  },
+  "repeats": 1000,
+  "seed": 20261005,
+  "simulation": {
+    "Commission + random ties": {
+      "validators_selected": {
+        "mean": 3016.613,
+        "low": 3012.0,
+        "high": 3022.0
+      },
+      "nodes_hit": {
+        "mean": 656.059,
+        "low": 635.0,
+        "high": 676.0
+      },
+      "nodes_losing_all_eligible_minipools": {
+        "mean": 222.764,
+        "low": 209.0,
+        "high": 236.0
+      },
+      "top5_selected_share_pct": {
+        "mean": 30.838063422437287,
+        "low": 30.40709497236758,
+        "high": 31.287376674843436
+      },
+      "selected_hhi": {
+        "mean": 0.02576894900231442,
+        "low": 0.025192949877496675,
+        "high": 0.0263968555133991
+      },
+      "credit_eth": {
+        "mean": 58528.472,
+        "low": 58520.0,
+        "high": 58536.0
+      },
+      "residual_eth": {
+        "mean": 129.8966073605495,
+        "low": 122.3686073605495,
+        "high": 138.3686073605495
+      },
+      "selected_capital_weighted_commission_pct": {
+        "mean": 15.298532304222594,
+        "low": 15.29836529068042,
+        "high": 15.298720277772883
+      }
+    },
+    "Random": {
+      "validators_selected": {
+        "mean": 2597.587,
+        "low": 2584.975,
+        "high": 2610.0
+      },
+      "nodes_hit": {
+        "mean": 671.517,
+        "low": 645.975,
+        "high": 697.0
+      },
+      "nodes_losing_all_eligible_minipools": {
+        "mean": 117.385,
+        "low": 99.0,
+        "high": 136.0
+      },
+      "top5_selected_share_pct": {
+        "mean": 13.904655622536062,
+        "low": 12.783284182531093,
+        "high": 15.067437379576107
+      },
+      "selected_hhi": {
+        "mean": 0.00853292449704102,
+        "low": 0.00790908584080243,
+        "high": 0.009191264770292936
+      },
+      "credit_eth": {
+        "mean": 58528.424,
+        "low": 58520.0,
+        "high": 58536.0
+      },
+      "residual_eth": {
+        "mean": 129.9446073605495,
+        "low": 122.3686073605495,
+        "high": 138.3686073605495
+      },
+      "selected_capital_weighted_commission_pct": {
+        "mean": 11.683588513843665,
+        "low": 11.533690729771864,
+        "high": 11.826756462348714
+      }
+    },
+    "Commission + sweep-position proxy": {
+      "validators_selected": 2995,
+      "nodes_hit": 598,
+      "nodes_losing_all_eligible_minipools": 206,
+      "top5_selected_share_pct": 32.487479131886474,
+      "selected_hhi": 0.02871173714677495,
+      "credit_eth": 58528,
+      "residual_eth": 130.3686073605495,
+      "selected_capital_weighted_commission_pct": 15.298542759965642
+    }
+  }
+}
