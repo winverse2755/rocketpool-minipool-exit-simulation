@@ -1,0 +1,69 @@
+{
+  "Latest sweep": {
+    "exits": 3049,
+    "nodes": 564,
+    "wiped": 292,
+    "rpl": "368110.024690914196431355"
+  },
+  "Random baseline": {
+    "exits": 2597,
+    "nodes": 684,
+    "wiped": 112,
+    "rpl": "102713.764175031163222756"
+  },
+  "Random ties": {
+    "exits": 3016,
+    "nodes": 658,
+    "wiped": 223,
+    "rpl": "217436.147485262182243571"
+  },
+  "Soonest sweep": {
+    "exits": 3024,
+    "nodes": 572,
+    "wiped": 226,
+    "rpl": "746248.393413452210174205"
+  },
+  "Validator index": {
+    "exits": 2995,
+    "nodes": 598,
+    "wiped": 206,
+    "rpl": "632229.39581316014334179"
+  },
+  "spreadsheet": {
+    "validators_selected": {
+      "calculated": 2995,
+      "expected": 2995,
+      "difference": 0
+    },
+    "credited_eth": {
+      "calculated": 58528,
+      "expected": 58528,
+      "difference": 0
+    },
+    "nodes_touched": {
+      "calculated": 598,
+      "expected": 598,
+      "difference": 0
+    },
+    "nodes_wiped": {
+      "calculated": 206,
+      "expected": 206,
+      "difference": 0
+    },
+    "exits_on_wiped_nodes_pct": {
+      "calculated": 12.1202003338898,
+      "expected": 12.1202003338898,
+      "difference": 0
+    },
+    "top10_node_share_pct": {
+      "calculated": 41.7028380634391,
+      "expected": 41.7028380634391,
+      "difference": 0
+    },
+    "rpl_on_wiped_nodes": {
+      "calculated": 632229.39581316,
+      "expected": 632229.39581316,
+      "difference": 0
+    }
+  }
+}

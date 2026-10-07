@@ -1,0 +1,17 @@
+{
+  "independent_reconciliation": {
+    "validators_selected": 2995,
+    "credited_eth": 58528,
+    "nodes_touched": 598,
+    "nodes_wiped": 206,
+    "exits_on_wiped_nodes_pct": 12.120200333889816,
+    "top10_node_share_pct": 41.70283806343907,
+    "rpl_on_wiped_nodes": 632229.3958131601
+  },
+  "request_cap_eth": "58538.36860736054925",
+  "next_credit_eth": "24",
+  "prefix_gap_eth": "10.36860736054925",
+  "including_next_exceeds_cap_eth": "13.63139263945075",
+  "sign_flips_across_seeds_and_overshoot": [],
+  "spreadsheet_status": "PASS: opened and recalculated in Apple Numbers, exported to XLSX; seven metric formulas agree with independent reconciliation"
+}
