@@ -5,20 +5,20 @@ from pathlib import Path
 
 import pandas as pd
 
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).resolve().parent.parent
 PUBLIC='https://github.com/winverse2755/rocketpool-minipool-exit-simulation'
 
 
 def main():
-    meta=json.loads((ROOT/'results.json').read_text())
-    sanity=json.loads((ROOT/'sanity.json').read_text())
-    summary=pd.read_csv(ROOT/'summary.csv')
+    meta=json.loads((ROOT/'results/results.json').read_text())
+    sanity=json.loads((ROOT/'results/sanity.json').read_text())
+    summary=pd.read_csv(ROOT/'results/summary.csv')
     seed, alternate=meta['seeds']
     def value(method,metric,demand=50000,seed_value=seed,rule='strict_cap'):
         return summary[(summary.seed==seed_value)&(summary.demand_reth==demand)&(summary.overshoot_rule==rule)&(summary.method==method)&(summary.metric==metric)].iloc[0]
     def mean(method,metric,**kwargs):
         return value(method,metric,**kwargs)['mean']
-    table=(ROOT/'table.md').read_text()
+    table=(ROOT/'results/table.md').read_text()
     rate=Decimal(meta['rate_wei'])/10**18
     secondary=[]
     for d in [10000,200000]:
@@ -47,7 +47,7 @@ Cells are mean [empirical 5th–95th percentile], except validator index is fixe
 
 {table}
 
-![Nodes losing all eligible minipools under each commission tie-break against the all-random band](nodes_wiped.png)
+![Nodes losing all eligible minipools under each commission tie-break against the all-random band](../figures/nodes_wiped.png)
 
 **Definition of wiped:** every *eligible minipool* on that node is selected. These counts include single-minipool nodes. They do not imply that every validator run by the operator disappears. “Exits on wiped nodes” is selected validator count on these nodes divided by total selected validators. “Top-10” ranks node addresses by their selected validator counts, not their pre-existing sizes or credited ETH. RPL is total staked RPL in tokens, counted once per wiped node; it measures associated exposure, not slashing, unstaking, or selling.
 
@@ -57,13 +57,13 @@ The 50k cap is **58,538.36860736054925 ETH**. Commission rules select means of a
 
 ## Phase 5: spreadsheet, seed, and overshoot checks
 
-The validator-index scenario was independently reconstructed using Python `Decimal` and `Counter`, then written as ordinary spreadsheet formulas in [hand_check.xlsx](hand_check.xlsx). Spreadsheet status: **{sanity['spreadsheet_status']}**. [verification.json](verification.json) records the formula results. Application-recalculated output is [hand_check_recalculated.xlsx](hand_check_recalculated.xlsx), where present. The original workbook retains exact fee wei as text; the simulation uses exact wei, while the spreadsheet works in floating ETH. Boundary margins are large enough that spreadsheet precision does not decide the last selection.
+The validator-index scenario was independently reconstructed using Python `Decimal` and `Counter`, then written as ordinary spreadsheet formulas in [hand_check.xlsx](../results/hand_check.xlsx). Spreadsheet status: **{sanity['spreadsheet_status']}**. [verification.json](../results/verification.json) records the formula results. Application-recalculated output is [hand_check_recalculated.xlsx](../results/hand_check_recalculated.xlsx), where present. The original workbook retains exact fee wei as text; the simulation uses exact wei, while the spreadsheet works in floating ETH. Boundary margins are large enough that spreadsheet precision does not decide the last selection.
 
 The explicit arithmetic is **1,326 × 24 ETH + 1,669 × 16 ETH = 58,528 ETH**, across **2,995** validators. All commissions above 14% supply **1,655 exits / 26,480 ETH**; the selected 14% prefix supplies **1,340 exits / 32,048 ETH**. There are **598 touched nodes, 206 wiped books, 12.1202% of exits on wiped nodes, 41.7028% top-10 share, and 632,229.3958 RPL on wiped nodes**. Unused cap: **10.36860736054925 ETH**; the next validator credits 24 ETH and would exceed the cap by **13.63139263945075 ETH**. Selecting a later smaller row instead would break the requested prefix rule.
 
 The second seed gives **{second_counts}**, against random **{mean('Random baseline','nodes_wiped',seed_value=alternate):.3f}** [{value('Random baseline','nodes_wiped',seed_value=alternate).p05:g}–{value('Random baseline','nodes_wiped',seed_value=alternate).p95:g}]. The sweep means move materially, especially soonest (235.1 → 209.8); the conclusion versus random persists, while the point estimate should not be treated as stable.
 
-The overshoot sensitivity includes exactly the first cap-crossing validator. It is **not compliant with the draft hard cap** and is included only as a robustness test. Paired results add at most one exit and change the wiped count by at most one node per draw. The sign of each method-minus-baseline mean remains unchanged across both seeds and both overshoot rules, for all three sizes and the nine audited metrics. Machine-readable comparisons: [robustness.csv](robustness.csv), [overshoot_deltas.csv](overshoot_deltas.csv), [sanity.json](sanity.json). A single extra exit can wipe a large node's remaining book, so share/RPL changes need not be tiny.
+The overshoot sensitivity includes exactly the first cap-crossing validator. It is **not compliant with the draft hard cap** and is included only as a robustness test. Paired results add at most one exit and change the wiped count by at most one node per draw. The sign of each method-minus-baseline mean remains unchanged across both seeds and both overshoot rules, for all three sizes and the nine audited metrics. Machine-readable comparisons: [robustness.csv](../results/robustness.csv), [overshoot_deltas.csv](../results/overshoot_deltas.csv), [sanity.json](../results/sanity.json). A single extra exit can wipe a large node's remaining book, so share/RPL changes need not be tiny.
 
 ## Additional sizes
 
@@ -75,7 +75,7 @@ At **200k**, top-10 concentration is not uniformly higher: random ties give **21
 
 ## Scope and limitations
 
-- [RPIP-71](https://rpips.rocketpool.net/RPIPs/RPIP-71) is a **draft**; commission priority is an oDAO **SHOULD**, and the sweep tie-break is optional (**MAY**), not an enforced deterministic selection algorithm. [RPIP-80](https://rpips.rocketpool.net/RPIPs/RPIP-80) is in review and defines expected user capital as `32 ETH − bond`. Specifications may change; source text is saved in [sources](sources).
+- [RPIP-71](https://rpips.rocketpool.net/RPIPs/RPIP-71) is a **draft**; commission priority is an oDAO **SHOULD**, and the sweep tie-break is optional (**MAY**), not an enforced deterministic selection algorithm. [RPIP-80](https://rpips.rocketpool.net/RPIPs/RPIP-80) is in review and defines expected user capital as `32 ETH − bond`. Specifications may change; source text is saved in [sources](../sources).
 - This is a **static snapshot**, with **no behaviour modelled**: no operator responses, migration, new validators, delegates refusing exits, RPL selling, liquidity flows, exit queues, payout delays, or reentry. RPL exposure is not a forecast of market sales.
 - Scenario sizes represent **net shortfalls expressed in rETH**, not gross queue deposits. Existing requested/voluntary exits and available ETH are assumed already netted out; no additional liquidity is deducted by this simulation. A 50k gross queue can require fewer exits.
 - Sweep is circular order of eligible validator indices. Pointers are uniformly sampled starting candidates, not uniform all-Ethereum cursor positions or seconds until withdrawal. Soonest orders indices ascending from the cursor; latest reverses that circular order. Index clustering can add concentration; no timing benefit is inferred.
@@ -84,37 +84,37 @@ At **200k**, top-10 concentration is not uniformly higher: random ties give **21
 
 ## Reproduce and inspect
 
-Use Python 3.12 or newer, install [requirements.txt](requirements.txt), and run from this directory:
+Use Python 3.12 or newer, install [requirements.txt](../requirements.txt), and run from the repository root:
 
 ```sh
 python -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python simulate.py
-.venv/bin/python verify.py
-.venv/bin/python build_report.py
-.venv/bin/python make_post_figures.py
-.venv/bin/python make_size_comparison.py
+.venv/bin/python scripts/simulate.py
+.venv/bin/python scripts/verify.py
+.venv/bin/python scripts/build_report.py
+.venv/bin/python scripts/make_post_figures.py
+.venv/bin/python scripts/make_size_comparison.py
 ```
 
-The script needs **no RPC, API key, or live network access**. [minipools.csv](minipools.csv), [nodes.csv](nodes.csv), and [snapshot.json](snapshot.json) are copied byte-for-byte from the audited Phases 1–3 inputs. [provenance.md](provenance.md) records upstream collection and hashes. [sha256_manifest.json](sha256_manifest.json) checks all published artifact bytes.
+The script needs **no RPC, API key, or live network access**. [minipools.csv](../data/minipools.csv), [nodes.csv](../data/nodes.csv), and [snapshot.json](../data/snapshot.json) are copied byte-for-byte from the audited Phases 1–3 inputs. [provenance.md](../docs/provenance.md) records upstream collection and hashes. [sha256_manifest.json](../results/sha256_manifest.json) checks all published artifact bytes.
 
 To recalculate the spreadsheet independently on macOS, run the following before `verify.py` and `build_report.py` (Numbers may require OS automation permission):
 
 ```sh
-osascript recalculate.applescript "$PWD/hand_check.xlsx" "$PWD/hand_check_recalculated.xlsx"
+osascript scripts/recalculate.applescript "$PWD/results/hand_check.xlsx" "$PWD/results/hand_check_recalculated.xlsx"
 ```
 
 Other spreadsheet applications can recalculate the workbook directly. `verify.py` verifies an application-exported workbook when present. Merely reading the original workbook's cached values is not independent spreadsheet verification.
 
-All per-draw results: [draws.csv](draws.csv). Aggregated 5th–95th percentiles: [summary.csv](summary.csv). Seeds and exact caps: [results.json](results.json). Pointers: [sweep_pointers.csv](sweep_pointers.csv). Representative 50k prefixes (including the first excluded row): [representative_prefixes.csv](representative_prefixes.csv). Per-node accounting: [representative_nodes.csv](representative_nodes.csv). Single chart is also available as [PDF](nodes_wiped.pdf) and [SVG](nodes_wiped.svg).
+All per-draw results: [draws.csv](../results/draws.csv). Aggregated 5th–95th percentiles: [summary.csv](../results/summary.csv). Seeds and exact caps: [results.json](../results/results.json). Pointers: [sweep_pointers.csv](../results/sweep_pointers.csv). Representative 50k prefixes (including the first excluded row): [representative_prefixes.csv](../results/representative_prefixes.csv). Per-node accounting: [representative_nodes.csv](../results/representative_nodes.csv). Single chart is also available as [PDF](../figures/nodes_wiped.pdf) and [SVG](../figures/nodes_wiped.svg).
 
-Additional post data: [original clustering run](clustering_original.json) and its [1,000 shuffle draws](clustering_original_draws.csv) use seed 20261005; the later clustering means in this report use seed 20261006. [post_details_draws.csv](post_details_draws.csv) and [post_details_summary.csv](post_details_summary.csv) derive per-node removal fractions, singleton/multi-node wipe counts, megapool-retention proxies, capital-weighted commissions and validator-principal accounting by replaying the existing 2,041 strict-cap 50k draw orders. [post_details.json](post_details.json) records assumptions; [node_fraction_removed.csv](node_fraction_removed.csv) records each node's fraction for representative draw 0 of each method. The yield calculation is a static contract-fee proxy on remaining eligible minipool capital, not a protocol APR forecast.
+Additional post data: [original clustering run](../data/clustering_original.json) and its [1,000 shuffle draws](../data/clustering_original_draws.csv) use seed 20261005; the later clustering means in this report use seed 20261006. [post_details_draws.csv](../results/post_details_draws.csv) and [post_details_summary.csv](../results/post_details_summary.csv) derive per-node removal fractions, singleton/multi-node wipe counts, megapool-retention proxies, capital-weighted commissions and validator-principal accounting by replaying the existing 2,041 strict-cap 50k draw orders. [post_details.json](../results/post_details.json) records assumptions; [node_fraction_removed.csv](../results/node_fraction_removed.csv) records each node's fraction for representative draw 0 of each method. The yield calculation is a static contract-fee proxy on remaining eligible minipool capital, not a protocol APR forecast.
 
-The report builder regenerates these derived metrics and preserves the editorially maintained post. Plot scripts reproduce [commission_clustering.png](commission_clustering.png), [reth_efficiency.png](reth_efficiency.png), and [exit_concentration_by_size.png](exit_concentration_by_size.png). The size-comparison chart's filtered source is [exit_concentration_by_size.csv](exit_concentration_by_size.csv), with [PDF](exit_concentration_by_size.pdf) and [SVG](exit_concentration_by_size.svg) exports.
+The report builder regenerates these derived metrics and preserves the editorially maintained post. Plot scripts reproduce [commission_clustering.png](../figures/commission_clustering.png), [reth_efficiency.png](../figures/reth_efficiency.png), and [exit_concentration_by_size.png](../figures/exit_concentration_by_size.png). The size-comparison chart's filtered source is [exit_concentration_by_size.csv](../results/exit_concentration_by_size.csv), with [PDF](../figures/exit_concentration_by_size.pdf) and [SVG](../figures/exit_concentration_by_size.svg) exports.
 
 Public repository: [{PUBLIC}]({PUBLIC}). The forum post is [POST.md](POST.md).
 '''
-    (ROOT/'README.md').write_text(note)
+    (ROOT/'reports/REPORT.md').write_text(note)
     from post_metrics import main as post_metrics
     from build_post import main as build_post
     post_metrics()

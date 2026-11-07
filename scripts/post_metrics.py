@@ -5,7 +5,6 @@ Reward calculations use static user capital and contract commission, assuming
 equal gross reward rate per staked ETH; they are not realised protocol APR.
 """
 import json
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -15,11 +14,11 @@ from simulate import ROOT, METHODS, Simulation, WEI, prefix_length
 
 def main():
     s=Simulation()
-    meta=json.loads((ROOT/'results.json').read_text())
+    meta=json.loads((ROOT/'results/results.json').read_text())
     seed=meta['seeds'][0]
-    saved=pd.read_csv(ROOT/'draws.csv')
+    saved=pd.read_csv(ROOT/'results/draws.csv')
     saved=saved[(saved.seed==seed)&(saved.demand_reth==50000)&(saved.overshoot_rule=='strict_cap')].set_index(['method','draw'])
-    pointers=pd.read_csv(ROOT/'sweep_pointers.csv')
+    pointers=pd.read_csv(ROOT/'results/sweep_pointers.csv')
     pointers=pointers[pointers.seed==seed].sort_values('draw')
     multi=s.sizes>1
     fees=s.fees/WEI
@@ -79,14 +78,14 @@ def main():
         record('Random baseline',draw,s.order('Random baseline',random=brng.random(len(s.df))))
     details=pd.DataFrame(rows)
     assert len(details)==len(saved)
-    details.to_csv(ROOT/'post_details_draws.csv',index=False)
-    pd.DataFrame(node_rows).to_csv(ROOT/'node_fraction_removed.csv',index=False)
+    details.to_csv(ROOT/'results/post_details_draws.csv',index=False)
+    pd.DataFrame(node_rows).to_csv(ROOT/'results/node_fraction_removed.csv',index=False)
     summaries=[]
     for method,group in details.groupby('method',sort=False):
         for metric in group.columns.drop(['method','draw']):
             v=group[metric]
             summaries.append(dict(method=method,metric=metric,draws=len(v),mean=v.mean(),p05=v.quantile(.05),p95=v.quantile(.95)))
-    pd.DataFrame(summaries).to_csv(ROOT/'post_details_summary.csv',index=False)
+    pd.DataFrame(summaries).to_csv(ROOT/'results/post_details_summary.csv',index=False)
     # This retained-RPL/commission weighting makes no assumption of forced sales.
     dash=json.loads((ROOT/'sources/rocketdash_crosscheck.json').read_text())
     from decimal import Decimal
@@ -104,7 +103,7 @@ def main():
               hypothetical_50000_reth_redemption_supply_fraction_pct=float(Decimal(50000)/supply*100),
               hypothetical_backing_after_50000_reth_redemption_eth=str(tvl-Decimal(50000)*Decimal(s.rate)/WEI),
               alternatives='Only all-random baseline and randomized ties already modeled; no node-balanced or round-robin algorithm tested')
-    (ROOT/'post_details.json').write_text(json.dumps(book,indent=2)+'\n')
+    (ROOT/'results/post_details.json').write_text(json.dumps(book,indent=2)+'\n')
     print(pd.DataFrame(summaries).pivot(index='method',columns='metric',values='mean')[[
         'mean_fraction_removed_touched_nodes_pct','mean_fraction_removed_touched_multi_nodes_pct',
         'single_pool_nodes_wiped','multi_pool_nodes_wiped','multi_nodes_losing_at_least_half',

@@ -10,7 +10,7 @@ I tested two things: whether commission is clustered within nodes, and whether R
 | Same, multi-minipool nodes only (873) | 72.28% (631) | 18.97% |
 | Same-commission pairs within a node | 73.48% | 41.98% |
 
-![Observed commission homogeneity and within-node pair similarity compared with randomized means](commission_clustering.png)
+![Observed commission homogeneity and within-node pair similarity compared with randomized means](../figures/commission_clustering.png)
 
 *Figure 1. Commission similarity exceeds the shuffled baseline, including among multi-minipool nodes. Single-minipool nodes are homogeneous by construction in both cases.*
 
@@ -34,7 +34,7 @@ Method:
 
 Cells show mean [5th–95th percentile]. Sweep ranges show rotation sensitivity, not timing. "Wiped" means every eligible minipool of the node was selected. RPL is counted once per wiped node and is exposure, not predicted selling.
 
-![Wiped eligible minipool books under the four commission tie-breaks against the random baseline at 50k rETH](nodes_wiped.png)
+![Wiped eligible minipool books under the four commission tie-breaks against the random baseline at 50k rETH](../figures/nodes_wiped.png)
 
 *Figure 2. All four commission tie-breaks wipe more eligible minipool books at 50k rETH. Ranges show empirical 5th–95th percentiles; sweep ranges measure cursor sensitivity. Nodes may retain other validators.*
 
@@ -47,7 +47,7 @@ Cells show mean [5th–95th percentile]. Sweep ranges show rotation sensitivity,
 - **Yield.** The remaining capital-weighted commission falls to about 10.64% under all four commission rules, versus 11.68% under random (11.68% before exits). That is a reward factor of 89.36% versus 88.32%, or about 3.1 bps of annual yield at an illustrative 3% gross rate. This is an efficiency proxy, not an APR forecast.
 - **TVL.** Both approaches credit about 58.5k ETH to rETH holders. Commission rules exit about 3.0k validators versus about 2.6k, because more of them carry 16 ETH bonds. Total validator principal removed is 96.3k ETH versus 83.1k ETH. The difference is returned operator bond, not extra rETH liquidity.
 
-![Remaining eligible-minipool commission and the split between rETH-funded principal and returned operator bonds](reth_efficiency.png)
+![Remaining eligible-minipool commission and the split between rETH-funded principal and returned operator bonds](../figures/reth_efficiency.png)
 
 *Figure 3. Soonest sweep illustrates the efficiency trade-off: lower remaining eligible-minipool commission, similar user exit credit, and more operator bond returned. The fee comparison is a proxy, not an APR forecast.*
 
@@ -55,7 +55,7 @@ Cells show mean [5th–95th percentile]. Sweep ranges show rotation sensitivity,
 
 The wiped-book result holds with the second seed and when the first cap-crossing validator is included. The 10k and 200k runs also wipe more books, but at 200k the top-10 share under random ties and validator index (21.85% / 22.22%) is below the random baseline (22.68%), so concentration depends on the metric and request size.
 
-![Wiped eligible minipool books and top-10 exit shares at 10k, 50k, and 200k rETH](exit_concentration_by_size.png)
+![Wiped eligible minipool books and top-10 exit shares at 10k, 50k, and 200k rETH](../figures/exit_concentration_by_size.png)
 
 *Figure 4. Wiped-book counts exceed random at all three modeled sizes. Top-10 shares converge at 200k, where random ties and validator index fall below the random baseline.*
 

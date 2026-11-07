@@ -9,22 +9,22 @@ from matplotlib.ticker import PercentFormatter
 import numpy as np
 import pandas as pd
 
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).resolve().parent.parent
 STYLES=[('Soonest sweep','#145b78','o'),('Latest sweep','#cf9740','s'),
         ('Random ties','#418f80','^'),('Validator index','#8b5c9a','D')]
 
 
 def main():
-    meta=json.loads((ROOT/'results.json').read_text())
+    meta=json.loads((ROOT/'results/results.json').read_text())
     seed=meta['seeds'][0]
-    summary=pd.read_csv(ROOT/'summary.csv')
+    summary=pd.read_csv(ROOT/'results/summary.csv')
     demands=[10000,50000,200000]
     metrics=['nodes_wiped','top10_node_share_pct']
     selected=summary[(summary.seed==seed)&(summary.overshoot_rule=='strict_cap')&
                      summary.demand_reth.isin(demands)&summary.metric.isin(metrics)].copy()
     assert len(selected)==30
     assert not selected.duplicated(['method','metric','demand_reth']).any()
-    selected.to_csv(ROOT/'exit_concentration_by_size.csv',index=False)
+    selected.to_csv(ROOT/'results/exit_concentration_by_size.csv',index=False)
 
     def rows(method,metric):
         return selected[(selected.method==method)&(selected.metric==metric)].set_index('demand_reth').loc[demands]
@@ -67,7 +67,7 @@ def main():
 
     fig.legend(handles=handles,loc='lower center',bbox_to_anchor=(.5,0),ncol=5,frameon=False,fontsize=10)
     for suffix in ['png','pdf','svg']:
-        fig.savefig(ROOT/f'exit_concentration_by_size.{suffix}',dpi=220)
+        fig.savefig(ROOT/f'figures/exit_concentration_by_size.{suffix}',dpi=220)
     plt.close(fig)
     print(selected[selected.metric=='top10_node_share_pct'].pivot(index='method',columns='demand_reth',values='mean').to_string())
 

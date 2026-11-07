@@ -5,11 +5,11 @@ by post_metrics.py; rebuilding the numerical report must not rewrite the post.
 """
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 
 
 def main():
-    post = ROOT / 'POST.md'
+    post = ROOT / 'reports/POST.md'
     if not post.exists() or not post.read_text().strip():
         raise FileNotFoundError('The editorially maintained POST.md is missing or empty')
     print('Kept editorial POST.md unchanged')

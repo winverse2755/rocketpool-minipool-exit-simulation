@@ -4,7 +4,6 @@ Exact integer commissions and wei caps; a priority prefix never skips a row.
 Independent RNG streams make draw orders paired across demand/overshoot tests.
 """
 import argparse
-import hashlib
 import json
 from collections import Counter
 from decimal import Decimal
@@ -16,7 +15,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 WEI = 10**18
 METHODS = ['Soonest sweep', 'Latest sweep', 'Random ties', 'Validator index', 'Random baseline']
 KEYS = ['validators_selected', 'nodes_touched', 'nodes_wiped', 'exits_on_wiped_nodes_pct',
@@ -37,9 +36,9 @@ def prefix_length(cumulative_eth, cap_wei, rule):
 
 class Simulation:
     def __init__(self):
-        self.meta = json.loads((ROOT / 'snapshot.json').read_text())
-        raw = pd.read_csv(ROOT / 'minipools.csv', dtype=str, keep_default_na=False)
-        self.node_table = pd.read_csv(ROOT / 'nodes.csv', dtype=str, keep_default_na=False).set_index('node')
+        self.meta = json.loads((ROOT / 'data/snapshot.json').read_text())
+        raw = pd.read_csv(ROOT / 'data/minipools.csv', dtype=str, keep_default_na=False)
+        self.node_table = pd.read_csv(ROOT / 'data/nodes.csv', dtype=str, keep_default_na=False).set_index('node')
         assert len(raw) == self.meta['staking_count']
         assert raw.snapshot_block.eq(str(self.meta['block'])).all()
         for key in ['minipool', 'pubkey', 'validator_index']:
@@ -144,8 +143,8 @@ def main():
             record('Random baseline', draw, None, s.order('Random baseline', random=brng.random(len(s.df))))
         print(f'Completed seed {seed}: {len(records):,} scenario draws', flush=True)
     draws = pd.DataFrame(records)
-    draws.to_csv(ROOT / 'draws.csv', index=False)
-    pd.DataFrame(pointers).to_csv(ROOT / 'sweep_pointers.csv', index=False)
+    draws.to_csv(ROOT / 'results/draws.csv', index=False)
+    pd.DataFrame(pointers).to_csv(ROOT / 'results/sweep_pointers.csv', index=False)
     summaries = []
     for (seed, demand, rule, method), group in draws.groupby(['seed', 'demand_reth', 'overshoot_rule', 'method'], sort=False):
         for key in KEYS:
@@ -153,7 +152,7 @@ def main():
             summaries.append(dict(seed=seed, demand_reth=demand, overshoot_rule=rule, method=method, metric=key,
                                   draws=len(v), mean=v.mean(), p05=v.quantile(.05), p95=v.quantile(.95), minimum=v.min(), maximum=v.max()))
     summary = pd.DataFrame(summaries)
-    summary.to_csv(ROOT / 'summary.csv', index=False)
+    summary.to_csv(ROOT / 'results/summary.csv', index=False)
     selected_rows, node_rows = [], []
     for method, (order, k, pointer) in representatives.items():
         rows = s.df.iloc[order[:min(k+1, len(order))]].copy()
@@ -170,8 +169,8 @@ def main():
                 node_rows.append(dict(method=method, node=name, exits=int(counts[i]), eligible_minipools=int(s.sizes[i]),
                                       all_staking_minipools=int(s.full_sizes[i]), wiped=bool(counts[i]==s.sizes[i]),
                                       has_megapool=bool(s.mega[i]), rpl=s.node_table.loc[name, 'node_rpl_wei']))
-    pd.concat(selected_rows).to_csv(ROOT / 'representative_prefixes.csv', index=False)
-    pd.DataFrame(node_rows).to_csv(ROOT / 'representative_nodes.csv', index=False)
+    pd.concat(selected_rows).to_csv(ROOT / 'results/representative_prefixes.csv', index=False)
+    pd.DataFrame(node_rows).to_csv(ROOT / 'results/representative_nodes.csv', index=False)
     metadata = dict(snapshot=s.meta, seeds=[args.seed, args.alternate_seed], demands=args.demands,
                     draws=args.draws, sweep_positions=args.pointers, rng='NumPy PCG64 / SeedSequence([seed, stream])',
                     streams={'pointers':0, 'random_ties':1, 'baseline':2}, other_liquidity_eth=0,
@@ -184,7 +183,7 @@ def main():
                     rpl_scope='total staked RPL counted once per wiped node; exposure, not loss or predicted selling',
                     sweep_sampling='20 distinct uniform eligible-validator-index starting positions; rotation sensitivity, not network cursor probabilities',
                     versions={x.__name__:x.__version__ for x in [np,pd,matplotlib]})
-    (ROOT / 'results.json').write_text(json.dumps(metadata, indent=2)+'\n')
+    (ROOT / 'results/results.json').write_text(json.dumps(metadata, indent=2)+'\n')
     write_table_and_chart(summary, args.seed)
     write_sanity(s, representatives, summary, args)
 
@@ -205,7 +204,7 @@ def write_table_and_chart(summary, seed):
                 cell += '%'
             cells.append(cell)
         table.append('| '+method+' | '+' | '.join(cells)+' |')
-    (ROOT / 'table.md').write_text('\n'.join(table)+'\n')
+    (ROOT / 'results/table.md').write_text('\n'.join(table)+'\n')
     plot = primary[primary.metric=='nodes_wiped'].set_index('method')
     plt.rcParams.update({'font.size':11, 'axes.spines.top':False, 'axes.spines.right':False})
     fig, ax = plt.subplots(figsize=(10.5,5.6), layout='constrained')
@@ -225,7 +224,7 @@ def write_table_and_chart(summary, seed):
     ax.grid(axis='y',alpha=.2)
     ax.legend(loc='lower left', fontsize=9)
     for suffix in ['png','pdf','svg']:
-        fig.savefig(ROOT / f'nodes_wiped.{suffix}', dpi=200)
+        fig.savefig(ROOT / f'figures/nodes_wiped.{suffix}', dpi=200)
     plt.close(fig)
 
 
@@ -269,60 +268,73 @@ def write_sanity(s, reps, summary, args):
                                                 method_mean=r['mean'],baseline_mean=b['mean'],difference=r['mean']-b['mean'],
                                                 above_baseline_p95=bool(r['mean']>b.p95)))
     comparison = pd.DataFrame(comparisons)
-    comparison.to_csv(ROOT / 'robustness.csv',index=False)
+    comparison.to_csv(ROOT / 'results/robustness.csv',index=False)
     signs = comparison.assign(sign=np.sign(comparison.difference)).groupby(['demand_reth','method','metric']).sign.nunique()
     flips = [dict(demand_reth=int(d),method=m,metric=k) for (d,m,k),v in signs.items() if v>1]
     # Paired overshoot delta for every draw.
     differences = []
-    for key, group in pd.read_csv(ROOT/'draws.csv').groupby(['seed','demand_reth','method'],sort=False):
+    for key, group in pd.read_csv(ROOT/'results/draws.csv').groupby(['seed','demand_reth','method'],sort=False):
         strict = group[group.overshoot_rule=='strict_cap'].set_index('draw')
         crossing = group[group.overshoot_rule=='include_crossing'].set_index('draw')
         for metric in KEYS[:9]:
             delta = crossing[metric]-strict[metric]
             differences.append(dict(seed=key[0],demand_reth=key[1],method=key[2],metric=metric,
                                     mean_delta=delta.mean(),max_absolute_delta=delta.abs().max()))
-    pd.DataFrame(differences).to_csv(ROOT/'overshoot_deltas.csv',index=False)
+    pd.DataFrame(differences).to_csv(ROOT/'results/overshoot_deltas.csv',index=False)
     sanity = dict(independent_reconciliation=manual,request_cap_eth=str(cap),next_credit_eth=str(next_credit),
                   prefix_gap_eth=str(cap-total),including_next_exceeds_cap_eth=str(total+next_credit-cap),
                   sign_flips_across_seeds_and_overshoot=flips,
                   spreadsheet_status='Formula workbook with independently computed cached values; recalculate in a spreadsheet application for application-level verification')
-    (ROOT/'sanity.json').write_text(json.dumps(sanity,indent=2)+'\n')
+    (ROOT/'results/sanity.json').write_text(json.dumps(sanity,indent=2)+'\n')
     make_spreadsheet(s,ordered,chosen,manual,cap,next_credit)
     print(json.dumps(sanity,indent=2),flush=True)
 
 
 def make_spreadsheet(s, ordered, chosen, manual, cap, next_credit):
     import xlsxwriter
-    wb = xlsxwriter.Workbook(ROOT/'hand_check.xlsx')
+    wb = xlsxwriter.Workbook(ROOT/'results/hand_check.xlsx')
     header = wb.add_format({'bold':True,'bg_color':'#dceaf1'})
     integer = wb.add_format({'num_format':'#,##0'})
     decimal = wb.add_format({'num_format':'#,##0.000000'})
     control = wb.add_worksheet('Control')
     inputs = [('Block',s.meta['block']),('ETH/rETH',float(Decimal(s.rate)/WEI)),('Net shortfall rETH',50000),('Hysteresis ETH',120)]
     for r,(label,value) in enumerate(inputs):
-        control.write(r,0,label); control.write_number(r,1,value)
-    control.write(4,0,'Request cap ETH'); control.write_formula(4,1,'=B2*B3-B4',decimal,float(cap))
-    control.write(6,0,'Scenario'); control.write(6,1,'Commission descending, validator index ascending, strict cap')
-    control.write(7,0,'Precision'); control.write(7,1,'CSV/script use exact wei; Excel floating precision cannot reproduce wei. Boundary margin exceeds 8 ETH.')
-    control.write(8,0,'Wiped'); control.write(8,1,'All eligible minipools selected; nodes may retain other validators.')
-    control.set_column(0,0,30); control.set_column(1,1,115)
+        control.write(r,0,label)
+        control.write_number(r,1,value)
+    control.write(4,0,'Request cap ETH')
+    control.write_formula(4,1,'=B2*B3-B4',decimal,float(cap))
+    control.write(6,0,'Scenario')
+    control.write(6,1,'Commission descending, validator index ascending, strict cap')
+    control.write(7,0,'Precision')
+    control.write(7,1,'CSV/script use exact wei; Excel floating precision cannot reproduce wei. Boundary margin exceeds 8 ETH.')
+    control.write(8,0,'Wiped')
+    control.write(8,1,'All eligible minipools selected; nodes may retain other validators.')
+    control.set_column(0,0,30)
+    control.set_column(1,1,115)
     prefix = wb.add_worksheet('Prefix')
     prefix.write_row(0,0,['Rank','Minipool','Node','Exact fee wei (text)','Validator index','Bond ETH','Credit ETH','Cumulative ETH','Selected'],header)
     cumulative = 0
     for i,row in enumerate(ordered[:len(chosen)+1],start=1):
-        bond = int(row['bond_wei'])//WEI; cumulative += 32-bond
+        bond = int(row['bond_wei'])//WEI
+        cumulative += 32-bond
         prefix.write_row(i,0,[i,row['minipool'],row['node'],row['commission_wei'],int(row['validator_index']),bond])
         prefix.write_formula(i,6,f'=32-F{i+1}',integer,32-bond)
         prefix.write_formula(i,7,f'=G{i+1}'+(f'+H{i}' if i>1 else ''),integer,cumulative)
         prefix.write_formula(i,8,f'=IF(H{i+1}<=Control!$B$5,1,0)',integer,int(i<=len(chosen)))
-    prefix.freeze_panes(1,0); prefix.autofilter(0,0,len(chosen)+1,8)
-    prefix.set_column(0,0,9); prefix.set_column(1,2,45); prefix.set_column(3,3,22); prefix.set_column(4,8,18)
+    prefix.freeze_panes(1,0)
+    prefix.autofilter(0,0,len(chosen)+1,8)
+    prefix.set_column(0,0,9)
+    prefix.set_column(1,2,45)
+    prefix.set_column(3,3,22)
+    prefix.set_column(4,8,18)
     last = len(chosen)+2
     node_sheet = wb.add_worksheet('Nodes')
     node_sheet.write_row(0,0,['Node','Eligible minipools','Selected','Wiped','Exits on wiped','Total RPL','RPL on wiped'],header)
     counts = Counter(row['node'] for row in chosen)
     for i,name in enumerate(s.names,start=1):
-        exits = counts.get(name,0); wiped=int(exits==s.sizes[i-1] and exits>0); rpl=float(s.rpl[i-1])
+        exits = counts.get(name,0)
+        wiped=int(exits==s.sizes[i-1] and exits>0)
+        rpl=float(s.rpl[i-1])
         node_sheet.write_row(i,0,[name,int(s.sizes[i-1])])
         node_sheet.write_formula(i,2,f'=SUMIF(Prefix!$C$2:$C${last},A{i+1},Prefix!$I$2:$I${last})',integer,exits)
         node_sheet.write_formula(i,3,f'=IF(AND(C{i+1}=B{i+1},C{i+1}>0),1,0)',integer,wiped)
@@ -330,7 +342,9 @@ def make_spreadsheet(s, ordered, chosen, manual, cap, next_credit):
         node_sheet.write_number(i,5,rpl,decimal)
         node_sheet.write_formula(i,6,f'=F{i+1}*D{i+1}',decimal,rpl*wiped)
     nlast = len(s.names)+1
-    node_sheet.set_column(0,0,45); node_sheet.set_column(1,7,19); node_sheet.freeze_panes(1,0)
+    node_sheet.set_column(0,0,45)
+    node_sheet.set_column(1,7,19)
+    node_sheet.freeze_panes(1,0)
     check = wb.add_worksheet('Check')
     check.write_row(0,0,['Metric','Spreadsheet formula','Independent Python value','Difference'],header)
     equations = [
@@ -342,13 +356,19 @@ def make_spreadsheet(s, ordered, chosen, manual, cap, next_credit):
         ('top10_node_share_pct','=100*('+ '+'.join(f'LARGE(Nodes!C2:C{nlast},{i})' for i in range(1,11))+')/B2'),
         ('rpl_on_wiped_nodes',f'=SUM(Nodes!G2:G{nlast})')]
     for i,(key,formula) in enumerate(equations,start=1):
-        value=manual[key]; check.write(i,0,key)
-        check.write_formula(i,1,formula,decimal,value); check.write_number(i,2,value,decimal)
+        value=manual[key]
+        check.write(i,0,key)
+        check.write_formula(i,1,formula,decimal,value)
+        check.write_number(i,2,value,decimal)
         check.write_formula(i,3,f'=B{i+1}-C{i+1}',decimal,0)
-    check.write(10,0,'Next validator credit'); check.write_number(10,1,float(next_credit))
-    check.write(11,0,'Unused strict cap'); check.write_formula(11,1,'=Control!B5-B3',decimal,float(cap-manual['credited_eth']))
-    check.write(12,0,'Crossing overshoot'); check.write_formula(12,1,'=B3+B11-Control!B5',decimal,float(Decimal(manual['credited_eth'])+next_credit-cap))
-    check.set_column(0,0,32); check.set_column(1,3,24)
+    check.write(10,0,'Next validator credit')
+    check.write_number(10,1,float(next_credit))
+    check.write(11,0,'Unused strict cap')
+    check.write_formula(11,1,'=Control!B5-B3',decimal,float(cap-manual['credited_eth']))
+    check.write(12,0,'Crossing overshoot')
+    check.write_formula(12,1,'=B3+B11-Control!B5',decimal,float(Decimal(manual['credited_eth'])+next_credit-cap))
+    check.set_column(0,0,32)
+    check.set_column(1,3,24)
     wb.close()
 
 
